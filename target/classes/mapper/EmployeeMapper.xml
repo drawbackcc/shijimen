@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.ssm.mapper.EmployeeMapper">
+<resultMap type="employeeBean" id="EmployeeResultMap">
+		<id property="emplID" column="e_id" />
+		<result column="e_num" property="emplNum" jdbcType="VARCHAR" />
+		<result column="password" property="password" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="gender" property="gender" jdbcType="INTEGER" />
+		<result column="id_card" property="idCard" jdbcType="VARCHAR" />
+		<result column="image" property="image" jdbcType="VARCHAR" />
+		<result column="phone" property="phone" jdbcType="VARCHAR" />
+		<result column="email" property="email" jdbcType="VARCHAR" />
+		<result column="address" property="address" jdbcType="VARCHAR" />	
+		<result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+		<result column="employ_date" property="employDate" jdbcType="TIMESTAMP" />
+		<result column="type" property="type" jdbcType="INTEGER" /> 
+		<result column="state" property="state" jdbcType="INTEGER" /> 
+    </resultMap>
+    
+    <select id="getEmployeeList" resultMap="EmployeeResultMap">
+     <![CDATA[ SELECT * FROM employee_info e WHERE 1]]>
+         <if test="emplID != null"><![CDATA[AND e.e_id = #{emplID} ]]></if>
+         <if test="emplNum != null and emplNum != ''"><![CDATA[AND e.e_num LIKE "%"#{emplNum,jdbcType=VARCHAR}"%"]]></if>
+         <if test="name != null and name != ''"><![CDATA[AND e.name LIKE "%"#{name,jdbcType=VARCHAR}"%" ]]></if>
+         <if test="password != null and password != ''"><![CDATA[AND e.password = #{password,jdbcType=VARCHAR} ]]></if>
+         <if test="phone != null and phone != ''"><![CDATA[AND e.phone LIKE "%"#{phone,jdbcType=VARCHAR}"%"]]></if>
+         <if test="idCard != null"><![CDATA[AND e.id_card LIKE "%"#{idCard,jdbcType=VARCHAR}"%"]]></if>
+         <if test="type != null"><![CDATA[AND e.type = #{type} ]]></if>
+         <if test="state != null"><![CDATA[AND e.state = #{state} ]]></if>
+	     <if test="row != null and pageSize != null "><![CDATA[LIMIT #{row}, #{pageSize} ]]></if>
+	     <![CDATA[;]]>
+	</select>
+	
+	<select id="getEmployeeIdList" resultType="Integer">
+     <![CDATA[ SELECT e.e_id FROM employee_info e WHERE e.e_num LIKE "%"#{employee,jdbcType=VARCHAR}"%" OR e.name LIKE "%"#{employee,jdbcType=VARCHAR}"%";]]>
+	</select>
+	
+	<select id="getEmployeeNum" resultType="Integer">
+     <![CDATA[ SELECT COUNT(*) FROM employee_info e WHERE 1]]>
+         <if test="emplID != null"><![CDATA[AND e.e_id = #{emplID} ]]></if>
+         <if test="emplNum != null"><![CDATA[AND e.e_num LIKE "%"#{emplNum,jdbcType=VARCHAR}"%"]]></if>
+         <if test="name != null and name != ''"><![CDATA[AND e.name LIKE "%"#{name,jdbcType=VARCHAR}"%"]]></if>
+         <if test="password != null"><![CDATA[AND e.password = #{password,jdbcType=VARCHAR} ]]></if>
+         <if test="phone != null and phone != ''"><![CDATA[AND e.phone LIKE "%"#{phone,jdbcType=VARCHAR}"%"]]></if>
+         <if test="idCard != null"><![CDATA[AND e.id_card LIKE "%"#{idCard,jdbcType=VARCHAR}"%"]]></if>
+         <if test="type != null"><![CDATA[AND e.type = #{type} ]]></if>
+         <if test="state != null"><![CDATA[AND e.state = #{state} ]]></if>
+	     <![CDATA[;]]>
+	</select>
+	
+	 <insert id ="insertEmployeeByBatch" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="emplID">
+             <![CDATA[INSERT INTO employee_info(e_num,name,password,gender,id_card,phone,employ_date) VALUES]]>
+            <foreach collection ="employees" item="e" index= "index" separator =",">
+            <![CDATA[(#{e.emplNum}, #{e.name}, #{e.password}, #{e.gender}, #{e.idCard}, #{e.phone}, #{e.employDate})]]>
+            </foreach >
+     </insert >
+	
+   <delete id="deleteEmployeeByBatch" parameterType="int[]">
+	<![CDATA[DELETE FROM employee_info WHERE e_id IN]]>
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+           <![CDATA[#{id}]]>
+        </foreach>
+    </delete>
+    
+     <update id="updateEmployee" parameterType="employeeBean">
+	<![CDATA[UPDATE employee_info 
+	SET e_num = #{e.emplNum}, name = #{e.name}, gender = #{e.gender}, id_card = #{e.idCard}, phone = #{e.phone}, 
+	    email = #{e.email}, address = #{e.address}, employ_date = #{e.employDate}, type = #{e.type}, state = #{e.state} WHERE e_id = #{e.emplID};]]>
+    </update>
+    
+    <update id="updateEmployeePassword">
+	<![CDATA[UPDATE employee_info SET password = #{password} WHERE e_id IN]]>
+	<foreach item="id" collection="ids" open="(" separator="," close=")">
+           <![CDATA[#{id}]]>
+    </foreach>
+    </update>
+</mapper>

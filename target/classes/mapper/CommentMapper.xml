@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.ssm.mapper.CommentMapper">
+    <resultMap type="commentBean" id="CommentResultMap">
+		<id property="orderID" column="o_id" />
+		<result column="m_id" property="memID" jdbcType="INTEGER" />
+		<result column="name" property="memName" jdbcType="VARCHAR" />
+		<result column="l_id" property="layoutID" jdbcType="INTEGER" />
+		<result column="comment" property="comment" jdbcType="VARCHAR" />
+		<result column="c_date" property="commDate" jdbcType="TIMESTAMP" />
+		<result column="reply" property="reply" jdbcType="VARCHAR" />
+		<result column="r_date" property="replyDate" jdbcType="TIMESTAMP" />
+		<result column="service" property="service" jdbcType="INTEGER" />
+		<result column="device" property="device" jdbcType="INTEGER" />
+		<result column="environment" property="environment" jdbcType="INTEGER" /> 
+    </resultMap>
+    
+     <select id="getCommentList" resultMap="CommentResultMap">
+     <![CDATA[ SELECT c.o_id, m.m_id, m.`name`, r.l_id, c.`comment`, c.c_date, c.reply, c.r_date, c.service, c.device, c.environment
+              FROM order_info_comment c LEFT JOIN member_info m ON c.m_id = m.m_id  LEFT JOIN order_info o ON c.o_id = o.o_id LEFT JOIN room_info r ON o.r_id = r.r_id WHERE 1 ]]>
+         <if test="lID != null"><![CDATA[AND r.l_id = #{lID} ]]></if>
+         <if test="memID != null"><![CDATA[AND c.m_id = #{memID} ]]></if>
+         <if test="orderID != null"><![CDATA[AND c.o_id = #{orderID} ]]></if>
+	     <if test="row != null and pageSize != null "><![CDATA[LIMIT #{row}, #{pageSize} ]]></if>
+	     <![CDATA[;]]>
+	</select>
+	
+	<select id="getCommentNum" resultType="Integer">
+     <![CDATA[ SELECT COUNT(*)
+              FROM order_info_comment c LEFT JOIN member_info m ON c.m_id = m.m_id  LEFT JOIN order_info o ON c.o_id = o.o_id LEFT JOIN room_info r ON o.r_id = r.r_id WHERE 1 ]]>
+         <if test="lID != null"><![CDATA[AND r.l_id = #{lID} ]]></if>
+         <if test="memID != null"><![CDATA[AND c.m_id = #{memID} ]]></if>
+         <if test="orderID != null"><![CDATA[AND c.o_id = #{orderID} ]]></if>
+	     <![CDATA[;]]>
+	</select>
+	
+	 <insert id ="insertComment">
+     <![CDATA[INSERT INTO order_info_comment(o_id,m_id,service,device,environment,`comment`) VALUES(#{comment.orderID}, #{comment.memID}, #{comment.service}, #{comment.device}, #{comment.environment}, #{comment.comment});]]>
+     </insert >
+</mapper>

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.ssm.mapper.OrderMapper">
+
+     <resultMap type="OrderBean" id="OrderResultMap">
+		<id property="orderID" column="o_id" />
+		<result column="o_num" property="orderNum" jdbcType="VARCHAR" />
+		<result column="alipay_no" property="alipayNo" jdbcType="VARCHAR" />
+		<result column="m_id" property="memID" jdbcType="INTEGER" />
+		<result column="m_name" property="memName" jdbcType="VARCHAR" /><!--  -->
+		<result column="r_id" property="roomID" jdbcType="INTEGER" />
+		<result column="plate" property="roomPlate" jdbcType="VARCHAR" /><!--  -->
+		<result column="l_id" property="layoutID" jdbcType="INTEGER" /><!--  -->
+		<result column="l_name" property="layoutName" jdbcType="VARCHAR" /><!--  -->
+		<!-- 
+		<result column="image" property="layoutImages" jdbcType="VARCHAR" />
+		 -->
+		<result column="oimage" property="orderImage" jdbcType="VARCHAR" />
+		<result column="describe" property="describe" jdbcType="VARCHAR" />
+		<result column="plus" property="plus" jdbcType="VARCHAR" />
+		<result column="price" property="price" jdbcType="DECIMAL" />
+		<result column="charge" property="charge" jdbcType="DECIMAL" />
+		<result column="real_charge" property="realCharge" jdbcType="DECIMAL" />
+		<result column="pay_state" property="payState" jdbcType="INTEGER" />
+		<result column="date" property="date" jdbcType="TIMESTAMP" />
+		<result column="from_date" property="fromDate" jdbcType="TIMESTAMP" />
+		<result column="to_date" property="toDate" jdbcType="TIMESTAMP" />
+		<result column="in_date" property="inDate" jdbcType="TIMESTAMP" />
+		<result column="out_date" property="outDate" jdbcType="TIMESTAMP" />
+		<result column="cancel_date" property="cancelDate" jdbcType="TIMESTAMP" />
+		<result column="deal_id" property="dealID" jdbcType="INTEGER" />
+		<result column="cancel_id" property="cancelID" jdbcType="INTEGER" />
+		<result column="state" property="state" jdbcType="INTEGER" />
+		<!-- 
+        <collection property="persons" ofType="ssm.beans.PersonBean"  resultMap="PersonResultMap" />  
+         -->
+    </resultMap>
+  
+    
+    <select id="getOrderInfoList" resultMap="OrderResultMap">
+    <![CDATA[SELECT *,la.name AS l_name FROM order_info o LEFT JOIN room_info r ON o.r_id = r.r_id LEFT JOIN layout_info la ON r.l_id = la.l_id WHERE 1 ]]>
+    <!-- 来自网上的订单 -->
+    <if test='orderType == "internet"'><![CDATA[AND o.m_id IS NOT NULL AND o.deal_id IS NULL ]]></if>
+    <!-- 来自前台的订单 -->
+    <if test='orderType == "reception"'><![CDATA[AND o.deal_id IS NOT NULL ]]></if>
+    <!-- 未完成的订单 -->
+    <if test='fromSite != null and fromSite == "checkinout"'><![CDATA[AND (o.in_date IS NULL OR o.out_date IS NULL OR o.o_id IN (SELECT p.o_id FROM order_info_people AS p WHERE p.in_date IS NULL OR p.out_date IS NULL))]]></if>
+    <if test="fromDate != null"><![CDATA[AND DATE(#{fromDate}) <= DATE(o.from_date)]]></if>
+    <if test="toDate != null"><![CDATA[AND DATE(#{toDate}) >= DATE(o.to_date)]]></if>
+    <if test="startDate != null"><![CDATA[AND DATE(#{startDate}) <= DATE(o.date)]]></if>
+    <if test="endDate != null"><![CDATA[AND DATE(#{endDate}) >= DATE(o.date)]]></if>
+    <if test="curDate != null"><![CDATA[AND o.to_date >= DATE(#{curDate}) AND o.in_date IS NULL]]></if>
+    <if test="state != null"><![CDATA[AND o.state = #{state} ]]></if>
+    <if test="orderID != null"><![CDATA[AND o.o_id = #{orderID} ]]></if>
+    <if test="orderIDs != null and orderIDs.size() > 0"><![CDATA[AND o.o_id IN ]]><foreach collection="orderIDs" item="orderID" open = "(" separator="," close = ")"><![CDATA[#{orderID}]]></foreach></if>
+    <if test="dealID != null"><![CDATA[AND o.deal_id = #{dealID} ]]></if>
+    <if test="dealIDs != null and dealIDs.size() > 0"><![CDATA[AND o.deal_id IN ]]><foreach collection="dealIDs" item="id" open = "(" separator="," close = ")"><![CDATA[#{id}]]></foreach></if>
+    <if test="cancelID != null"><![CDATA[AND o.cancel_id = #{cancelID} ]]></if>
+    <if test="cancelIDs != null and cancelIDs.size() > 0"><![CDATA[AND o.cancel_id IN ]]><foreach collection="cancelIDs" item="id" open = "(" separator="," close = ")"><![CDATA[#{id}]]></foreach></if>
+    <if test="orderNum != null and orderNum != ''"><![CDATA[AND o.o_num LIKE "%"#{orderNum,jdbcType=VARCHAR}"%"]]></if>
+    <if test="memID != null"><![CDATA[AND o.m_id = #{memID} ]]></if>
+    <if test="layoutID != null"><![CDATA[AND r.l_id = #{layoutID} ]]></if>
+    <if test="roomID != null"><![CDATA[AND o.r_id = #{roomID} ]]></if>
+    <if test="plate != null and plate != ''"><![CDATA[AND r.plate LIKE "%"#{plate,jdbcType=VARCHAR}"%"]]></if>
+    <![CDATA[ORDER BY o.date DESC]]>
+    <if test="row != null and pageSize != null"><![CDATA[LIMIT #{row}, #{pageSize} ]]></if>
+     <![CDATA[;]]>
+	</select> 
+	
+	<select id="getOrderInfoNum" resultType="Integer">
+    <![CDATA[SELECT COUNT(*) FROM order_info o LEFT JOIN room_info r ON o.r_id = r.r_id WHERE 1 ]]>
+    <if test='orderType == "internet"'><![CDATA[AND o.m_id IS NOT NULL AND o.deal_id IS NULL ]]></if>
+    <if test='orderType == "reception"'><![CDATA[AND o.deal_id IS NOT NULL ]]></if>
+    <if test='fromSite != null and fromSite == "checkinout"'><![CDATA[AND (o.in_date IS NULL OR o.out_date IS NULL OR o.o_id IN (SELECT p.o_id FROM order_info_people AS p WHERE p.in_date IS NULL OR p.out_date IS NULL))]]></if>
+    <if test="fromDate != null"><![CDATA[AND DATE(#{fromDate}) <= DATE(o.from_date)]]></if>
+    <if test="toDate != null"><![CDATA[AND DATE(#{toDate}) >= DATE(o.to_date)]]></if>
+    <if test="startDate != null"><![CDATA[AND DATE(#{startDate}) <= DATE(o.date)]]></if>
+    <if test="endDate != null"><![CDATA[AND DATE(#{endDate}) >= DATE(o.date)]]></if>
+    <if test="curDate != null"><![CDATA[AND o.to_date >= DATE(#{curDate}) AND o.in_date IS NULL]]></if>
+    <if test="state != null"><![CDATA[AND o.state = #{state} ]]></if>
+    <if test="orderID != null"><![CDATA[AND o.o_id = #{orderID} ]]></if>
+    <if test="orderIDs != null and orderIDs.size() > 0"><![CDATA[AND o.o_id IN ]]><foreach collection="orderIDs" item="orderID" open = "(" separator="," close = ")"><![CDATA[#{orderID}]]></foreach></if>
+    <if test="dealID != null"><![CDATA[AND o.deal_id = #{dealID} ]]></if>
+    <if test="dealIDs != null and dealIDs.size() > 0"><![CDATA[AND o.deal_id IN ]]><foreach collection="dealIDs" item="id" open = "(" separator="," close = ")"><![CDATA[#{id}]]></foreach></if>
+    <if test="cancelID != null"><![CDATA[AND o.cancel_id = #{cancelID} ]]></if>
+    <if test="cancelIDs != null and cancelIDs.size() > 0"><![CDATA[AND o.cancel_id IN ]]><foreach collection="cancelIDs" item="id" open = "(" separator="," close = ")"><![CDATA[#{id}]]></foreach></if>
+    <if test="orderNum != null and orderNum != ''"><![CDATA[AND o.o_num LIKE "%"#{orderNum,jdbcType=VARCHAR}"%"]]></if>
+    <if test="memID != null"><![CDATA[AND o.m_id = #{memID} ]]></if>
+    <if test="layoutID != null"><![CDATA[AND r.l_id = #{layoutID} ]]></if>
+    <if test="roomID != null"><![CDATA[AND o.r_id = #{roomID} ]]></if>
+    <if test="plate != null and plate != ''"><![CDATA[AND r.plate LIKE "%"#{plate,jdbcType=VARCHAR}"%"]]></if>
+    <![CDATA[;]]>
+	</select> 
+	
+	<select id="getOrderIdListByPeople" resultType="Integer">
+	<![CDATA[SELECT o_id FROM order_info_people WHERE name LIKE "%"#{people,jdbcType=VARCHAR}"%" OR id_card LIKE "%"#{people,jdbcType=VARCHAR}"%";]]>
+	</select>
+	
+	<select id="getOrderIdListByEmployee" resultType="Integer">
+	<![CDATA[SELECT o_id FROM order_info_people WHERE]]>
+    <![CDATA[in_id IN ]]><foreach collection="ids" item="id" open = "(" separator="," close = ")"><![CDATA[#{id}]]></foreach>
+     <![CDATA[OR out_id IN ]]><foreach collection="ids" item="id" open = "(" separator="," close = ")"><![CDATA[#{id}]]></foreach>
+	</select>
+	
+	<delete id="deleteOrderByBatch" parameterType="int[]">
+	<![CDATA[DELETE FROM order_info WHERE o_id IN]]>
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+           <![CDATA[#{id}]]>
+        </foreach>
+    </delete>
+    
+    <delete id="cancelOrderByBatch">
+	<![CDATA[UPDATE order_info SET cancel_id = #{employeeID}, cancel_date = #{cancelDate}, state = 0 WHERE o_id IN]]>
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+           <![CDATA[#{id}]]>
+        </foreach>
+    </delete>
+
+    <resultMap type="PersonBean" id="PersonResultMap">
+        <id property="personID" column="personID" />
+		<result column="orderID" property="orderID" jdbcType="INTEGER" />
+		<result column="gender" property="gender" jdbcType="INTEGER" />
+		<result column="pName" property="name" jdbcType="VARCHAR" />
+		<result column="pIDCard" property="idCard" jdbcType="VARCHAR" />
+		<result column="pPhone" property="phone" jdbcType="VARCHAR" />
+		<!--  -->
+		<result column="inDate" property="inDate" jdbcType="TIMESTAMP" />
+		<result column="inID" property="inID" jdbcType="INTEGER" />
+		<result column="inNum" property="inNum" jdbcType="VARCHAR" />
+		<result column="inName" property="inName" jdbcType="VARCHAR" />
+		<result column="outDate" property="outDate" jdbcType="TIMESTAMP" />
+		<result column="outID" property="outID" jdbcType="INTEGER" />
+		<result column="outNum" property="outNum" jdbcType="VARCHAR" />
+		<result column="outName" property="outName" jdbcType="VARCHAR" />	
+    </resultMap>
+	<select id="getPersonListOfOrder" resultMap="PersonResultMap">
+	 <![CDATA[SELECT op.p_id AS personID, op.o_id AS orderID, op.gender AS gender, op.`name` AS pName, op.id_card AS pIDCard, op.phone AS pPhone, 
+                     op.in_date AS inDate, emi.e_id AS inID, emi.e_num AS inNum, emi.`name` AS inName, 
+                     op.out_date AS outDate, emo.e_id AS outID, emo.e_num AS outNum, emo.`name` AS outName
+              FROM (order_info_people op LEFT JOIN employee_info emi ON op.in_id = emi.e_id) LEFT JOIN employee_info emo ON op.out_id = emo.e_id WHERE 1 ]]>
+              <if test="personID != null"><![CDATA[AND op.p_id = #{personID} ]]></if>
+              <if test="orderID != null"><![CDATA[AND op.o_id = #{orderID} ]]></if>
+              <if test="name != null and name != ''"><![CDATA[AND op.name LIKE "%"#{name,jdbcType=VARCHAR}"%" ]]></if>
+              <if test="idCard != null and idCard != ''"><![CDATA[AND op.id_card = #{idCard,jdbcType=VARCHAR} ]]></if>
+              <if test="orderID != null"><![CDATA[AND op.o_id = #{orderID} ]]></if>
+              <if test="inID != null"><![CDATA[AND op.in_id = #{inID} ]]></if>
+              <if test="outID != null"><![CDATA[AND op.out_id = #{outID} ]]></if>
+              <if test="inNum != null and inNum != ''"><![CDATA[AND emi.e_num = #{inNum,jdbcType=VARCHAR} ]]></if>
+              <if test="outNum != null and outNum != ''"><![CDATA[AND emo.e_num = #{outNum,jdbcType=VARCHAR} ]]></if>
+              <![CDATA[;]]>
+	</select>
+	
+	<select id="getContactListOfOrder" resultType="personBean">
+	 <![CDATA[SELECT o_id AS orderID, name, phone, ps FROM order_info_contact WHERE o_id = #{orderID}; ]]>
+	</select>
+	
+	 <insert id ="insertOrderByBatch" useGeneratedKeys="true" keyProperty="orderID">
+             <![CDATA[INSERT INTO order_info(o_num, m_id, r_id, `describe`, oimage, price, charge, real_charge, pay_state, from_date, to_date, in_date, deal_id, plus) VALUES]]>
+            <foreach collection ="list" item="order" index= "index" separator =",">
+            <![CDATA[(#{order.orderNum}, #{order.memID}, #{order.roomID}, #{order.describe}, #{order.orderImage}, #{order.price}, #{order.charge}, #{order.realCharge}, #{order.payState}, #{order.fromDate}, #{order.toDate}, #{order.inDate}, #{order.dealID}, #{order.plus})]]>
+            </foreach >
+     </insert >
+	
+	<insert id ="insertPersonByBatch" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="personID">
+             <![CDATA[INSERT INTO order_info_people(o_id, name, gender, id_card, phone, in_id, in_date) VALUES]]>
+            <foreach collection ="persons" item="person" index= "index" separator =",">
+            <![CDATA[(#{person.orderID}, #{person.name}, #{person.gender}, #{person.idCard}, #{person.phone}, #{person.inID}, #{person.inDate})]]>
+            </foreach >
+     </insert >
+     
+     <insert id ="insertContactByBatch" parameterType="java.util.List">
+             <![CDATA[INSERT INTO order_info_contact(o_id, name, phone, ps) VALUES]]>
+            <foreach collection ="persons" item="person" index= "index" separator =",">
+            <![CDATA[(#{person.orderID}, #{person.name}, #{person.phone}, #{person.ps})]]>
+            </foreach >
+     </insert >
+     
+      <update id="updatePersonCheckStateByBatch" >
+      <if test="inDate != null and inID != null">
+      <![CDATA[UPDATE order_info_people SET in_date = #{inDate}, in_id = #{inID} WHERE p_id IN]]>
+      <foreach item="id" collection="ids" open="(" separator="," close=")">
+           <![CDATA[#{id}]]>
+        </foreach>;
+      </if>
+	  <if test="outDate != null and outID != null">
+      <![CDATA[UPDATE order_info_people SET out_date = #{outDate}, out_id = #{outID} WHERE p_id IN]]>
+      <foreach item="id" collection="ids" open="(" separator="," close=")">
+           <![CDATA[#{id}]]>
+        </foreach>;
+      </if>
+    </update>
+    
+    <update id="updateOrderPayState" >
+      <![CDATA[UPDATE order_info SET real_charge = #{realCharge}, pay_state = #{payState} WHERE o_id = #{orderID}]]>
+    </update>
+    
+    <update id="updateOrderAliPayState" >
+      <![CDATA[UPDATE order_info SET real_charge = #{realCharge}, pay_state = #{payState}, alipay_no = #{alipayNo} WHERE o_num = #{orderNum}]]>
+    </update>
+
+</mapper>

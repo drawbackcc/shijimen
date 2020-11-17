@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.ssm.mapper.AnalysisMapper">
+<select id="getTotalCharge" resultType="Double">
+    <![CDATA[SELECT COALESCE(SUM(real_charge),0) FROM order_info WHERE 1 ]]>
+          <!-- 线上订单 -->
+         <if test="type != null and type == 0"><![CDATA[AND deal_id IS NULL AND m_id IS NOT NULL]]></if>
+         <!-- 线下订单 -->
+         <if test="type != null and type == 1"><![CDATA[AND deal_id IS NOT NULL]]></if>
+         <if test="startDate != null and endDate != null"><![CDATA[AND (DATE(date) BETWEEN DATE(#{startDate}) AND DATE_ADD(#{endDate},INTERVAL 1 DAY))]]></if>
+	     <if test="payState != null"><![CDATA[AND pay_state = #{payState}]]></if>
+	     <if test="state != null"><![CDATA[AND state = #{state}]]></if>
+	     <if test="roomIDs != null and roomIDs.size() > 0"><![CDATA[AND r_id IN ]]><foreach collection="roomIDs" item="id" open = "(" separator="," close = ")"><![CDATA[#{id}]]></foreach></if>
+	     <![CDATA[;]]>
+	</select>
+    
+</mapper>

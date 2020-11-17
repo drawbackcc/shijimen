@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.ssm.mapper.LayoutMapper">
+    <resultMap type="layoutBean" id="LayoutResultMap">
+		<id property="l_id" column="l_id" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="summarize" property="summarize" jdbcType="VARCHAR" />
+		<result column="describe" property="describe" jdbcType="VARCHAR" />
+		<result column="image" property="image" jdbcType="VARCHAR" />
+		<result column="price" property="price" jdbcType="DECIMAL" />
+		<result column="bed_type" property="bed_type" jdbcType="VARCHAR" />
+		<result column="bed_num" property="bed_num" jdbcType="INTEGER" />
+		<result column="area" property="area" jdbcType="INTEGER" />
+		<result column="limit" property="limit" jdbcType="INTEGER" />
+		<result column="create_date" property="create_date" jdbcType="TIMESTAMP" />
+		<result column="modif_date" property="modif_date" jdbcType="TIMESTAMP" />
+		<result column="state" property="state" jdbcType="INTEGER" />
+        <collection property="rooms" ofType="RoomBean"  resultMap="RoomResultMap" />
+    </resultMap>
+    <resultMap type="roomBean" id="RoomResultMap">
+		<id property="r_id" column="r_id" />
+		<result column="rl_id" property="l_id" jdbcType="INTEGER" />
+		<result column="plate" property="plate" jdbcType="VARCHAR" />
+		<result column="floor" property="floor" jdbcType="INTEGER" />
+		<result column="rstate" property="state" jdbcType="INTEGER" />
+		<!-- 注意这里两个表都有相同的字段state，将room表的字段该别名为rstate -->
+    </resultMap>
+    
+    
+    <select id="getLayoutBeans" resultMap="LayoutResultMap">
+    <![CDATA[ SELECT * FROM layout_info la WHERE 1 ]]>
+         <if test="lID != null"><![CDATA[AND la.l_id = #{lID} ]]></if>
+	     <if test="name != null and name != ''"><![CDATA[AND  la.name like "%"#{name}"%" ]]></if>
+	     <if test="lState != null"><![CDATA[AND la.state = #{lState} ]]></if>
+	     <if test="row != null and pageSize != null "><![CDATA[LIMIT #{row}, #{pageSize} ]]></if>
+	     <![CDATA[;]]>
+	</select>
+	
+	<select id="getLayoutBeansNum" resultType="Integer">
+    <![CDATA[ SELECT COUNT(*) FROM layout_info la WHERE 1 ]]>
+         <if test="lID != null"><![CDATA[AND la.l_id = #{lID} ]]></if>
+	     <if test="name != null and name != ''"><![CDATA[AND  la.name like "%"#{name}"%" ]]></if>
+	     <if test="lState != null"><![CDATA[AND la.state = #{lState} ]]></if>
+	     <![CDATA[;]]>
+	</select>
+	<!-- 
+	<select id="getLayoutRoomNumberMapList" resultType="java.util.HashMap" keyProperty="l_id">
+	<![CDATA[SELECT la.l_id, COUNT(ro.l_id)
+              FROM layout_info la LEFT JOIN room_info ro ON la.l_id = ro.l_id
+              GROUP BY la.l_id;]]>
+    </select>
+     -->
+	
+	<select id="getLayoutAndRoomBeans" resultMap="LayoutResultMap">
+	<![CDATA[SELECT *, ro.l_id as rl_id, ro.state as rstate FROM layout_info la LEFT JOIN room_info ro ON la.l_id = ro.l_id WHERE 1]]>
+	     <if test="lID != null"><![CDATA[AND la.l_id = #{lID} ]]></if>
+	     <if test="name != null and name != ''"><![CDATA[AND  la.name like "%"#{name}"%" ]]></if>
+	     <if test="lState != null"><![CDATA[AND la.state = #{lState} ]]></if>
+	     <if test="rID != null"><![CDATA[AND ro.r_id = #{rID} ]]></if>
+	     <if test="plate != null and plate != ''"><![CDATA[AND  ro.plate = "#{plate}" ]]></if>
+	     <if test="rState != null"><![CDATA[AND ro.state = #{rState} ]]></if>
+	     <if test="lIDs != null and lIDs.size > 0"><![CDATA[AND la.l_id IN]]>
+	     <foreach item="id" collection="lIDs" open="(" separator="," close=")">
+           <![CDATA[#{id}]]>
+        </foreach>
+	     </if>
+	     <![CDATA[;]]>
+	</select>
+	<!-- 
+	<select id="getBookedLayoutAndRoomBeans" resultMap="LayoutResultMap">
+	<![CDATA[SELECT *,ro.l_id as rl_id, ro.state as rstate FROM layout_info la LEFT JOIN room_info ro ON la.l_id = ro.l_id LEFT JOIN order_info ON order_info.r_id = ro.r_id WHERE 1]]>
+	    <if test="from != null and to != null">
+	    <![CDATA[AND ((DATE(#{from}) BETWEEN DATE(from_date) AND DATE_SUB(to_date,INTERVAL 1 DAY)) OR
+                       (DATE_SUB(DATE(#{to}),INTERVAL 1 DAY) BETWEEN DATE(from_date) AND DATE_SUB(to_date,INTERVAL 1 DAY)) OR
+                       (DATE(from_date) >= DATE(#{from}) AND DATE(to_date) <= DATE(#{to})))
+        ]]>
+	    </if>
+	    <if test="oID != null"><![CDATA[AND o_id = #{oID} ]]></if>
+	    <if test="oNum != null and oNum != ''"><![CDATA[AND o_num = #{oNum} ]]></if>
+	    <if test="oState != null"><![CDATA[AND order_info.state = #{oState} ]]></if>
+	    <if test="oState == null"><![CDATA[AND order_info.state = 1 ]]></if>
+	    <if test="lID != null"><![CDATA[AND la.l_id = #{lID} ]]></if>
+	    <if test="lState != null"><![CDATA[AND la.state = #{lState} ]]></if>
+	    <if test="lState == null"><![CDATA[AND la.state = 1 ]]></if>
+	    <if test="rID != null"><![CDATA[AND ro.r_id = #{rID} ]]></if>
+	    <if test="rState != null"><![CDATA[AND ro.state = #{rState} ]]></if>
+	    <if test="rState == null"><![CDATA[AND ro.state = 1 ]]></if>
+	    <![CDATA[;]]>
+	</select>
+	
+	<select id="getUnbookedLayoutAndRoomBeans" resultMap="LayoutResultMap">
+	<![CDATA[SELECT *,ro.l_id as rl_id, ro.state as rstate FROM layout_info la LEFT OUTER JOIN room_info ro ON la.l_id = ro.l_id WHERE 1]]>
+	    <if test="lID != null"><![CDATA[AND la.l_id = #{lID} ]]></if>
+	    <if test="lState != null"><![CDATA[AND la.state = #{lState} ]]></if>
+	    <if test="lState == null"><![CDATA[AND la.state = 1 ]]></if>
+	    <if test="rID != null"><![CDATA[AND ro.r_id = #{rID} ]]></if>
+	    <if test="rState != null"><![CDATA[AND ro.state = #{rState} ]]></if>
+	    <if test="rState == null"><![CDATA[AND ro.state = 1 ]]></if>
+	    <if test="from != null and to != null">
+	    <![CDATA[AND NOT EXISTS
+                      (SELECT o.r_id
+                       FROM order_info o
+                       WHERE ((DATE(#{from}) BETWEEN DATE(o.from_date) AND DATE_SUB(o.to_date,INTERVAL 1 DAY)) OR
+                              (DATE_SUB(DATE(#{to}),INTERVAL 1 DAY) BETWEEN DATE(o.from_date) AND DATE_SUB(o.to_date,INTERVAL 1 DAY)) OR
+                              (DATE(o.from_date) >= DATE(#{from}) AND DATE(o.to_date) <= DATE(#{to})))
+                             AND o.state = 1 AND ro.r_id = o.r_id)
+        ]]>
+	    </if>
+	    <![CDATA[;]]>
+	</select>
+	
+	 -->
+	
+	<insert id ="insertLayoutByBatch" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="l_id">
+             <![CDATA[INSERT INTO layout_info(`name`,`describe`,price) VALUES]]>
+            <foreach collection ="layouts" item="layout" index= "index" separator =",">
+            <![CDATA[(#{layout.name}, #{layout.describe}, #{layout.price})]]>
+            </foreach >
+     </insert >
+	
+	<delete id="deleteLayoutByBatch" parameterType="int[]">
+	<![CDATA[DELETE FROM layout_info WHERE l_id IN]]>
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+           <![CDATA[#{id}]]>
+        </foreach>
+    </delete>
+    
+    <update id="updateLayoutImage">
+	  <![CDATA[UPDATE layout_info SET image = #{images} WHERE l_id = #{layoutID};]]>
+    </update>
+    
+     <select id="getLayoutImage" resultType="string">
+	  <![CDATA[SELECT image from layout_info WHERE l_id = #{layoutID};]]>
+    </select>
+</mapper>

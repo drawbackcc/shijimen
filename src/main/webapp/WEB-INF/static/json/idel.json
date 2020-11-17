@@ -1,0 +1,18 @@
+
+{"data":
+[
+  {"id":"1","name":"豪华大床房A","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"2","name":"豪华大床房B","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"3","name":"豪华大床房C","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"4","name":"豪华大床房D","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"5","name":"豪华大床房E","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"6","name":"豪华大床房F","summarize":"豪华 | 舒适","area":"10","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"120","emp":"10","status":"有房"},
+  {"id":"7","name":"豪华大床房G","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"8","name":"豪华大床房H","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"9","name":"豪华大床房I","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"0","status":"已满"},
+  {"id":"10","name":"豪华大床房J","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"11","name":"豪华大床房K","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"12","name":"豪华大床房L","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"13","name":"豪华大床房M","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"},
+  {"id":"14","name":"豪华大床房N","summarize":"豪华 | 舒适","area":"20","bed_num":"1","bed_type":"1.8m X 2.0m | 双人","limit":"2","price":"180","emp":"8","status":"有房"}
+]}

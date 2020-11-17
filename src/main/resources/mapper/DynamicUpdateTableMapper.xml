@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.ssm.mapper.DynamicUpdateTableMapper">
+
+      <update id="dynamicUpdateTable" parameterType="map">
+           <![CDATA[UPDATE ${table.tabName} SET]]>
+                   <foreach item="value" index="key" collection="table.entrySet()" separator=",">
+                       <if test="key!='tabName' and key!='id' and key!='idName'">
+                       <![CDATA[${key}=${value}]]>
+                       </if>
+                   </foreach>
+                   <![CDATA[ WHERE ${table.idName}=${table.id};]]>
+      </update>
+</mapper>

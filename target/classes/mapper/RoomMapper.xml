@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.ssm.mapper.RoomMapper">
+<resultMap type="RoomBean" id="RoomResultMap">
+		<id property="r_id" column="r_id" />
+		<result column="l_id" property="l_id" jdbcType="INTEGER" />
+		<result column="plate" property="plate" jdbcType="VARCHAR" />
+		<result column="floor" property="floor" jdbcType="INTEGER" />
+		<result column="state" property="state" jdbcType="INTEGER" />
+ </resultMap>
+ 
+ <select id="getRoomList" resultMap="RoomResultMap">
+    <![CDATA[ SELECT * FROM room_info WHERE 1 ]]>
+         <if test="lID != null"><![CDATA[AND l_id = #{lID} ]]></if>
+         <if test="rID != null"><![CDATA[AND r_id = #{rID} ]]></if>
+	     <if test="plate != null and plate != ''"><![CDATA[AND  plate LIKE "%"#{plate,jdbcType=VARCHAR}"%" ]]></if>
+	     <if test="floor != null"><![CDATA[AND floor = #{floor} ]]></if>
+	     <if test="rState != null"><![CDATA[AND state = #{rState} ]]></if>
+	<!--    <if test="sortName != null and sortOrder != null "><![CDATA[ORDER BY #{sortName} #{sortOrder} ]]></if> 这样写会注入双引号，失效
+	一个办法是用$，但不推荐
+	-->  
+	<!-- 不要这样写 -->
+<!-- <if test="sortName != null and sortOrder != null "><![CDATA[ORDER BY ${sortName} ${sortOrder} ]]></if> -->	
+
+	<!--    <if test="sortName != null and sortOrder != null ">--> 
+         <!-- mybatis判断字符串用双引号 -->
+         <if test='sortName == "floor" and sortOrder == "asc"'><![CDATA[ORDER BY floor ASC]]></if>
+          <if test='sortName == "floor" and sortOrder == "desc"'><![CDATA[ORDER BY floor DESC]]></if>
+           <if test='sortName == "plate" and sortOrder == "asc"'><![CDATA[ORDER BY plate ASC]]></if>
+            <if test='sortName == "plate" and sortOrder == "desc"'><![CDATA[ORDER BY plate DESC]]></if>
+     <!--    </if>--> 
+	     <if test="row != null and pageSize != null "><![CDATA[LIMIT #{row}, #{pageSize} ]]></if>
+	     <![CDATA[;]]>
+	</select>
+	
+	<select id="getRoomIdList" resultType="Integer">
+    <![CDATA[ SELECT r_id FROM room_info WHERE 1 ]]>
+         <if test="lID != null"><![CDATA[AND l_id = #{lID} ]]></if>
+         <if test="rID != null"><![CDATA[AND r_id = #{rID} ]]></if>
+	     <if test="plate != null and plate != ''"><![CDATA[AND  plate LIKE "%"#{plate,jdbcType=VARCHAR}"%" ]]></if>
+	     <if test="floor != null"><![CDATA[AND floor = #{floor} ]]></if>
+	     <if test="rState != null"><![CDATA[AND state = #{rState} ]]></if>
+	     <![CDATA[;]]>
+	</select>
+	
+	<select id="getBookedRoomIdList" resultType="Integer">
+    <![CDATA[ SELECT r_id FROM order_info 
+              WHERE ((DATE(#{from}) BETWEEN DATE(from_date) AND DATE_SUB(to_date,INTERVAL 1 DAY)) OR
+                       (DATE_SUB(DATE(#{to}),INTERVAL 1 DAY) BETWEEN DATE(from_date) AND DATE_SUB(to_date,INTERVAL 1 DAY)) OR
+                       (DATE(from_date) >= DATE(#{from}) AND DATE(to_date) <= DATE(#{to})))]]>
+    <if test="oState != null"><![CDATA[AND state = #{oState} ]]></if>
+	</select>
+	
+	
+	<select id="getRoomNum" resultType="Integer">
+    <![CDATA[ SELECT COUNT(*) FROM room_info WHERE 1 ]]>
+         <if test="lID != null"><![CDATA[AND l_id = #{lID} ]]></if>
+         <if test="rID != null"><![CDATA[AND r_id = #{rID} ]]></if>
+	     <if test="plate != null and plate != ''"><![CDATA[AND  plate LIKE "%"#{plate,jdbcType=VARCHAR}"%"]]></if>
+	     <if test="floor != null"><![CDATA[AND floor = #{floor} ]]></if>
+	     <if test="rState != null"><![CDATA[AND state = #{rState} ]]></if>
+	     <![CDATA[;]]>
+	</select>
+	
+	 <insert id ="insertRoomByBatch" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="r_id">
+             <![CDATA[INSERT INTO room_info(plate,floor,l_id) VALUES]]>
+            <foreach collection ="rooms" item="room" index= "index" separator =",">
+            <![CDATA[(#{room.plate}, #{room.floor}, #{room.l_id})]]>
+            </foreach >
+     </insert >
+     
+     <delete id="deleteRoomByBatch" parameterType="int[]">
+	<![CDATA[DELETE FROM room_info WHERE r_id IN]]>
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+           <![CDATA[#{id}]]>
+        </foreach>
+    </delete>
+    
+     <update id="updateRoom" >
+	<![CDATA[UPDATE room_info SET plate = #{plate}, floor = #{floor}, l_id = #{l_id}, state = #{state} WHERE r_id = #{r_id};]]>
+    </update>
+   
+</mapper>
